@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="离线绘制 GitHub 年度贡献图并导出日期和提交数。">
-  <title>贡献图画布 · Contribution Canvas</title>
+  <meta name="description" content="Design GitHub contribution art offline and export dates and commit counts.">
+  <title>Contribution Canvas</title>
   <link rel="stylesheet" href="style.css">
   <script src="canvas.js" defer></script>
 </head>
@@ -12,57 +12,61 @@
   <main>
     <header class="hero">
       <div>
-        <p class="eyebrow">CONTRIBUTION CANVAS</p>
-        <h1>贡献图画布<span>.</span></h1>
-        <p class="intro">把一年画成一幅像素图。每格对应一天，颜色代表计划生成的提交数。</p>
+        <h1><span class="title" data-i18n="title">Contribution Canvas</span><span>.</span></h1>
+        <p class="intro" data-i18n="intro">Draw on a year of GitHub contributions. Each square represents one day and its planned commit count.</p>
       </div>
-      <label class="year">年份 <select id="year"></select></label>
+      <div class="header-controls">
+        <label class="year"><span data-i18n="year">Year</span> <select id="year"></select></label>
+        <label class="year"><span data-i18n="language">Language</span>
+          <select id="language"><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">简体中文</option></select>
+        </label>
+      </div>
     </header>
 
     <section class="panel calendar-panel" aria-labelledby="calendar-title">
       <div class="section-head">
-        <div><h2 id="calendar-title">年度画布</h2><p id="selection" class="muted">点击或拖动色块开始绘制</p></div>
-        <div class="metrics"><div><strong id="days">0</strong><span>着色天数</span></div><div><strong id="commits">0</strong><span>计划提交</span></div></div>
+        <div><h2 id="calendar-title">Yearly canvas</h2><p id="selection" class="muted">Click or drag across the squares to draw.</p></div>
+        <div class="metrics"><div><strong id="days">0</strong><span data-i18n="paintedDays">Painted days</span></div><div><strong id="commits">0</strong><span data-i18n="plannedCommits">Planned commits</span></div></div>
       </div>
-      <div class="calendar-scroll" tabindex="0" aria-label="年度贡献图，可横向滚动">
+      <div class="calendar-scroll" tabindex="0" data-i18n-label="calendarLabel" aria-label="Yearly contribution graph, horizontally scrollable">
         <div class="calendar">
           <div class="months" id="months" aria-hidden="true"></div>
-          <div class="weekdays" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
-          <div id="grid" class="grid" role="group" aria-label="选择日期绘制。方向键移动，空格着色。"></div>
+          <div id="weekdays" class="weekdays" aria-hidden="true"></div>
+          <div id="grid" class="grid" role="group" data-i18n-label="gridLabel" aria-label="Use the arrow keys to select a date and Space to paint."></div>
         </div>
       </div>
       <div class="canvas-foot">
-        <span>每列一周 · 周日开始</span>
-        <div class="actions"><button id="undo" type="button" disabled>撤销</button><button id="clear" type="button">清空</button></div>
+        <span data-i18n="weeks">One week per column, starting on Sunday</span>
+        <div class="actions"><button id="undo" type="button" data-i18n="undo" disabled>Undo</button><button id="clear" type="button" data-i18n="clear">Clear</button></div>
       </div>
     </section>
 
     <div class="toolbox">
       <section class="panel tool" aria-labelledby="brush-title">
-        <h2 id="brush-title">画笔</h2>
-        <div class="swatches" id="swatches" role="group" aria-label="每格提交数"></div>
-        <label class="field">自定义提交数 <input id="count" type="number" min="0" max="100" step="1" value="12"></label>
+        <h2 id="brush-title" data-i18n="brush">Brush</h2>
+        <div class="swatches" id="swatches" role="group" data-i18n-label="swatchesLabel" aria-label="Commits per square"></div>
+        <label class="field"><span data-i18n="customCount">Custom commit count</span> <input id="count" type="number" min="0" max="100" step="1" value="12"></label>
       </section>
       <section class="panel tool" aria-labelledby="text-title">
-        <h2 id="text-title">文字转像素</h2>
+        <h2 id="text-title" data-i18n="pixelText">Pixel text</h2>
         <form id="stamp" class="inline-form">
-          <input id="words" aria-label="要绘制的英文或数字" placeholder="例如 HELLO" maxlength="8" autocomplete="off" spellcheck="false">
-          <button type="submit">绘制</button>
+          <input id="words" data-i18n-label="wordsLabel" aria-label="Letters or numbers to draw" data-i18n-placeholder="wordsPlaceholder" placeholder="e.g. HELLO" maxlength="8" autocomplete="off" spellcheck="false">
+          <button type="submit" data-i18n="draw">Draw</button>
         </form>
-        <p class="muted">用当前画笔把英文或数字居中叠加到画布。</p>
+        <p class="muted" data-i18n="textHelp">Center letters or numbers on the canvas using the current brush.</p>
       </section>
       <section class="panel tool" aria-labelledby="export-title">
-        <h2 id="export-title">图案文件</h2>
+        <h2 id="export-title" data-i18n="patternFile">Pattern file</h2>
         <div class="actions">
-          <button id="download" type="button" class="primary">导出 JSON</button>
-          <button id="import" type="button">导入</button>
+          <button id="download" type="button" class="primary" data-i18n="exportJson">Export JSON</button>
+          <button id="import" type="button" data-i18n="import">Import</button>
           <input id="file" type="file" accept=".json,application/json" hidden>
         </div>
-        <p class="muted">将图案交给本地 Python 脚本生成 Git 仓库。</p>
+        <p class="muted" data-i18n="exportHelp">Use the exported file with the Python script to generate a local Git repository.</p>
       </section>
     </div>
     <p id="status" class="status" role="status"></p>
-    <footer><span>图案预览仅包含本工具计划新增的提交。</span><a href="README.md">生成与推送说明 ↗</a></footer>
+    <footer><span data-i18n="previewNote">The preview shows planned commits.</span><a id="guide" href="README.md" data-i18n="guide">Generation and push guide ↗</a></footer>
   </main>
 </body>
 </html>

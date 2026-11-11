@@ -15,6 +15,58 @@ const glyphs = {
 const DAY = 86_400_000;
 const MAX_YEAR = new Date().getFullYear();
 const PRESETS = [0, 1, 3, 6, 12];
+const messages = {
+  en: {
+    title: 'Contribution Canvas',
+    intro: 'Draw on a year of GitHub contributions. Each square represents one day and its planned commit count.',
+    year: 'Year', language: 'Language', paintedDays: 'Painted days', plannedCommits: 'Planned commits',
+    calendarLabel: 'Yearly contribution graph, horizontally scrollable',
+    gridLabel: 'Use the arrow keys to select a date and Space to paint.',
+    weeks: 'One week per column, starting on Sunday', undo: 'Undo', clear: 'Clear',
+    brush: 'Brush', swatchesLabel: 'Commits per square', customCount: 'Custom commit count', eraser: 'Eraser',
+    pixelText: 'Pixel text', wordsLabel: 'Letters or numbers to draw', wordsPlaceholder: 'e.g. HELLO',
+    draw: 'Draw', textHelp: 'Center letters or numbers on the canvas using the current brush.',
+    patternFile: 'Pattern file', exportJson: 'Export JSON', import: 'Import',
+    exportHelp: 'Use the exported file with the Python script to generate a local Git repository.',
+    previewNote: 'The preview shows planned commits.', guide: 'Generation and push guide ↗',
+    calendarTitle: '{year} canvas', selection: 'Click or drag across the squares to draw.',
+    cell: '{date} · {count} commits',
+    cellOne: '{date} · 1 commit',
+    invalidPattern: 'Use a version 1 pattern JSON file with a valid year and a commits object.',
+    invalidDate: 'Invalid entry {date}. Use a date in the selected year and a commit count from 1 to 100.',
+    invalidBrush: 'Enter a whole number from 0 to 100 for the brush.',
+    invalidText: 'Enter 1–8 English letters, digits, or spaces.',
+    stamped: 'Drew {text}.', emptyCanvas: 'Paint at least one square before exporting.',
+    exported: 'Exported {file}.', imported: 'Imported {file}.',
+    invalidJson: 'The file does not contain valid JSON.',
+    importFailed: 'Could not import the file. {detail}',
+  },
+  'zh-CN': {
+    title: '贡献图画布',
+    intro: '把一年画成一幅像素图。每格对应一天，颜色代表计划生成的提交数。',
+    year: '年份', language: '语言', paintedDays: '着色天数', plannedCommits: '计划提交',
+    calendarLabel: '年度贡献图，可横向滚动',
+    gridLabel: '用方向键选择日期，按空格着色。',
+    weeks: '每列一周，从周日开始', undo: '撤销', clear: '清空',
+    brush: '画笔', swatchesLabel: '每格提交数', customCount: '自定义提交数', eraser: '橡皮擦',
+    pixelText: '文字转像素', wordsLabel: '要绘制的英文或数字', wordsPlaceholder: '例如 HELLO',
+    draw: '绘制', textHelp: '用当前画笔把英文或数字居中叠加到画布。',
+    patternFile: '图案文件', exportJson: '导出 JSON', import: '导入',
+    exportHelp: '将导出的文件交给 Python 脚本生成本地 Git 仓库。',
+    previewNote: '预览显示计划新增的提交。', guide: '生成与推送说明 ↗',
+    calendarTitle: '{year} 年画布', selection: '点击或拖动色块开始绘制。',
+    cell: '{date} · {count} 次提交',
+    cellOne: '{date} · 1 次提交',
+    invalidPattern: '需要版本为 1 的贡献图 JSON，并包含有效年份和日期记录。',
+    invalidDate: '无效记录 {date}。日期须属于所选年份，提交数须为 1–100 的整数。',
+    invalidBrush: '画笔提交数请输入 0–100 的整数。',
+    invalidText: '请输入 1–8 个英文字母、数字或空格。',
+    stamped: '已绘制 {text}。', emptyCanvas: '先画至少一格，再导出图案。',
+    exported: '已导出 {file}。', imported: '已导入 {file}。',
+    invalidJson: '文件不是有效的 JSON。',
+    importFailed: '导入失败。{detail}',
+  },
+};
 const $ = id => document.getElementById(id);
 const grid = $('grid');
 const drafts = new Map();
@@ -25,6 +77,45 @@ let cells = [];
 let undo = [];
 let focused = 0;
 let stroke = null;
+let language = defaultLanguage();
+
+function defaultLanguage() {
+  try {
+    const stored = localStorage.getItem('contribution-canvas:language');
+    if (stored === 'en' || stored === 'zh-CN') return stored;
+  } catch {
+    // Use the browser language when storage is unavailable.
+  }
+  return /^zh(?:-|$)/i.test(navigator.language) ? 'zh-CN' : 'en';
+}
+
+function translate(key, values = {}) {
+  return messages[language][key].replace(/\{(\w+)\}/g, (_, name) => values[name]);
+}
+
+function applyLanguage() {
+  document.documentElement.lang = language;
+  document.title = translate('title');
+  $('language').value = language;
+  for (const element of document.querySelectorAll('[data-i18n]')) {
+    element.textContent = translate(element.dataset.i18n);
+  }
+  for (const element of document.querySelectorAll('[data-i18n-label]')) {
+    element.setAttribute('aria-label', translate(element.dataset.i18nLabel));
+  }
+  $('words').placeholder = translate('wordsPlaceholder');
+  $('guide').href = language === 'zh-CN' ? 'README.zh-CN.md' : 'README.md';
+  $('swatches').firstElementChild.textContent = translate('eraser');
+  const weekdays = language === 'zh-CN' ? ['日', '一', '二', '三', '四', '五', '六']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  $('weekdays').replaceChildren(...weekdays.map(day => {
+    const label = document.createElement('span');
+    label.textContent = day;
+    return label;
+  }));
+  $('status').textContent = '';
+  render();
+}
 
 function datesForYear(value) {
   const start = new Date(Date.UTC(value, 0, 1));
@@ -56,12 +147,12 @@ function textPixels(value, dates) {
 function validate(data) {
   if (data?.version !== 1 || !Number.isInteger(data.year) || data.year < 2008 || data.year > MAX_YEAR
       || !data.commits || typeof data.commits !== 'object' || Array.isArray(data.commits)) {
-    throw new Error('需要版本为 1 的贡献图 JSON，并包含有效年份和日期记录。');
+    throw new Error(translate('invalidPattern'));
   }
   const validDates = new Set(datesForYear(data.year));
   for (const [date, count] of Object.entries(data.commits)) {
     if (!validDates.has(date) || !Number.isInteger(count) || count < 1 || count > 100) {
-      throw new Error('无效记录 ' + date + '。日期须属于所选年份，提交数须为 1–100 的整数。');
+      throw new Error(translate('invalidDate', { date }));
     }
   }
   return new Map(Object.entries(data.commits));
@@ -108,7 +199,7 @@ function updateCell(index) {
   const count = pattern.get(date) ?? 0;
   if (count) cell.dataset.level = level(count);
   else delete cell.dataset.level;
-  cell.title = date + ' · ' + count + ' 次提交';
+  cell.title = translate(count === 1 ? 'cellOne' : 'cell', { date, count });
   cell.setAttribute('aria-label', cell.title);
 }
 
@@ -122,13 +213,14 @@ function render() {
   calendar = datesForYear(year);
   grid.parentElement.style.setProperty('--weeks', calendar.length / 7);
   $('year').value = year;
-  $('calendar-title').textContent = year + ' 年画布';
-  $('selection').textContent = '点击或拖动色块开始绘制';
+  $('calendar-title').textContent = translate('calendarTitle', { year });
+  $('selection').textContent = translate('selection');
   $('months').replaceChildren();
+  const monthFormat = new Intl.DateTimeFormat(language, { month: 'short', timeZone: 'UTC' });
   for (const [index, date] of calendar.entries()) {
     if (!date?.endsWith('-01')) continue;
     const label = document.createElement('span');
-    label.textContent = Number(date.slice(5, 7)) + '月';
+    label.textContent = monthFormat.format(new Date(date));
     label.style.gridColumn = Math.floor(index / 7) + 1;
     $('months').append(label);
   }
@@ -151,7 +243,7 @@ function render() {
 function brush() {
   const input = $('count');
   if (!input.checkValidity() || input.value === '') {
-    $('status').textContent = '画笔提交数请输入 0–100 的整数。';
+    $('status').textContent = translate('invalidBrush');
     return null;
   }
   return Number(input.value);
@@ -196,7 +288,7 @@ $('year').addEventListener('change', () => {
 for (const count of PRESETS) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.textContent = count ? String(count) : '橡皮擦';
+  button.textContent = count ? String(count) : translate('eraser');
   button.dataset.count = count;
   if (count) button.dataset.level = level(count);
   button.addEventListener('click', () => {
@@ -281,7 +373,7 @@ $('stamp').addEventListener('submit', event => {
   const count = brush();
   if (count === null) return;
   if (!/^[A-Z0-9 ]{1,8}$/.test(value)) {
-    $('status').textContent = '请输入 1–8 个英文字母、数字或空格。';
+    $('status').textContent = translate('invalidText');
     return;
   }
   const previous = new Map(pattern);
@@ -291,12 +383,12 @@ $('stamp').addEventListener('submit', event => {
   }
   record(previous);
   render();
-  $('status').textContent = '已绘制 ' + value + '。';
+  $('status').textContent = translate('stamped', { text: value });
 });
 $('download').addEventListener('click', () => {
   finishStroke();
   if (!pattern.size) {
-    $('status').textContent = '画布还是空的。先画几格再导出。';
+    $('status').textContent = translate('emptyCanvas');
     return;
   }
   const url = URL.createObjectURL(new Blob([JSON.stringify(snapshot(), null, 2) + '\n'], { type: 'application/json' }));
@@ -305,7 +397,7 @@ $('download').addEventListener('click', () => {
   link.download = 'contributions-' + year + '.json';
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-  $('status').textContent = '已导出 ' + link.download + '。';
+  $('status').textContent = translate('exported', { file: link.download });
 });
 $('import').addEventListener('click', () => $('file').click());
 $('file').addEventListener('change', async event => {
@@ -323,11 +415,23 @@ $('file').addEventListener('change', async event => {
     pattern = next;
     record(previous);
     render();
-    $('status').textContent = '已导入 ' + file.name + '。';
+    $('status').textContent = translate('imported', { file: file.name });
   } catch (error) {
-    $('status').textContent = '导入失败。' + error.message;
+    const detail = error instanceof SyntaxError ? translate('invalidJson') : error.message;
+    $('status').textContent = translate('importFailed', { detail });
   }
 });
 
+$('language').addEventListener('change', () => {
+  finishStroke();
+  language = $('language').value;
+  try {
+    localStorage.setItem('contribution-canvas:language', language);
+  } catch {
+    // The language still applies in this session.
+  }
+  applyLanguage();
+});
+
 pattern = readDraft(year) ?? new Map();
-render();
+applyLanguage();

@@ -1,45 +1,45 @@
-# Contribution Canvas · 贡献图画布
+# Contribution Canvas
 
-用浏览器打开 [index.html](index.html) 即可离线编辑。首次打开是当年的空白画布，可以选择 2008 年至当年之间的任意年份。
+English · [简体中文](README.zh-CN.md)
 
-1. 点击色块设置画笔。鼠标可以拖着画，触屏可以点按。用键盘时，按方向键选日期，按空格着色。
-2. 输入最多 8 个英文字母、数字或空格，将像素文字叠加到画布。选橡皮擦可以擦掉单格，撤销可恢复上一笔。
-3. 点击 **导出 JSON**，把文件保存到此目录。文件名包含所选年份，也可以随时导入图案继续编辑。
+Design GitHub contribution graph art in your browser and export a pattern for a standalone Git repository. Download the project and open [index.html](index.html) to use it offline. The editor starts with a blank canvas for the current year, supports years from 2008 onward, and offers English and Simplified Chinese.
 
-每格的数字是计划新增的提交数。实际主页会将这些提交与已有活动合并，颜色深浅可能和预览不同。
+1. Pick a brush to set the number of commits per square. Click or drag to paint. On a keyboard, use the arrow keys to select a day and Space to paint.
+2. Enter up to eight English letters, digits, or spaces to stamp pixel text. Use the eraser for individual squares or undo the last edit.
+3. Export the pattern as JSON. The filename includes the selected year, and you can import it later to continue editing.
 
-下图是 2025 年的示例。下载 [HELLO WORLD 图案](hello-world-2025.json)，在编辑器中导入就能查看和修改。
+Each square represents the commits you plan to add. GitHub combines these with existing activity, so the colors on your profile may differ from the preview.
 
-![HELLO WORLD 贡献图预览](hello-world-2025.png)
+Download the [HELLO WORLD example](hello-world-2025.json) and import it to try the editor.
 
-## 生成本地 Git 仓库
+![HELLO WORLD example on a 2025 contribution grid](hello-world-2025.png)
 
-需要 Python 3.8 或更新版本，以及可以通过命令行调用的 Git。把下面的 `contributions-YEAR.json` 换成实际导出的文件名，先查看日期范围和提交总数。
+## Generate a local Git repository
 
-```powershell
+Install Python 3.8 or newer and make sure Git is available on your command line. Replace `contributions-YEAR.json` with the exported filename to review the date range and total number of commits.
+
+```shell
 python repo_generator.py contributions-YEAR.json --dry-run
 ```
 
-生成仓库时，选择一个尚不存在的输出目录，并填写 GitHub 账号已关联的邮箱。可以在 GitHub 的邮箱设置中查看用于提交的地址。
+Choose a new output directory and use an email address associated with your GitHub account.
 
-```powershell
+```shell
 python repo_generator.py contributions-YEAR.json --output artwork --name "YOUR_NAME" --email "YOUR_GITHUB_EMAIL"
 git -C artwork log --format="%aI %s"
 ```
 
-脚本会在新目录的 `main` 分支生成图案提交。作者和提交时间都设为所选日期的北京时间中午。生成的仓库会注明这些提交用于图案创作。
+The script creates the artwork commits on `main`, with both timestamps set to noon in UTC+08:00 on the selected day. The generated repository identifies its commits as contribution graph art.
 
-## 显示在 GitHub 主页
+## Show the artwork on your GitHub profile
 
-确认本地历史后，可以在 GitHub 建立一个独立空仓库，例如 `contribution-art`。创建时跳过 README、许可证和 `.gitignore`，然后手动推送。
+After reviewing the local history, create an empty, standalone GitHub repository such as `contribution-art`. Leave the README, license, and .gitignore options unchecked when creating it, then push your local history.
 
-```powershell
+```shell
 git -C artwork remote add origin https://github.com/YOUR_USERNAME/contribution-art.git
 git -C artwork push -u origin main
 ```
 
-确认 GitHub 仓库的默认分支是 `main`，再在个人主页切换到所选年份。GitHub 会根据作者日期和邮箱等条件统计提交。[查看 GitHub 贡献规则](https://docs.github.com/en/account-and-profile/reference/profile-contributions-reference)
+Confirm that `main` is the default branch and select the artwork year on your profile. GitHub uses the author date and account email to attribute qualifying commits. [GitHub contribution rules](https://docs.github.com/en/account-and-profile/reference/profile-contributions-reference)
 
-设计流程参考 [Mechmallow/git_matrix](https://github.com/Mechmallow/git_matrix)。
-
-本工具采用 [MIT 许可证](LICENSE)。
+Inspired by [Mechmallow/git_matrix](https://github.com/Mechmallow/git_matrix). Released under the [MIT License](LICENSE).
