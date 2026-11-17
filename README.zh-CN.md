@@ -6,7 +6,7 @@
 
 **[在线试玩 →](https://shaqg.github.io/contribution-canvas/)** · [查看 2025 年贡献图成品](https://github.com/ShaqG?tab=overview&from=2025-12-01&to=2025-12-31)
 
-![跨年终端动图。2024 年的 hello w 补成 hello wo，光标向右移动，2025 年打完 hello world。](terminal-through-the-years.gif)
+![跨年终端动图。2024 年从 hello_ 输入到 hello wo_，2025 年打完 hello world。](terminal-through-the-years.gif)
 
 ## 开始画第一张图
 

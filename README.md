@@ -6,7 +6,7 @@ Draw pixel art on your GitHub contribution graph. Try the editor without signing
 
 **[Try it online →](https://shaqg.github.io/contribution-canvas/)** · [View the finished 2025 graph](https://github.com/ShaqG?tab=overview&from=2025-12-01&to=2025-12-31)
 
-![Terminal art made with Contribution Canvas. The cursor moves from hello w to hello wo in 2024, then the line completes as hello world in 2025.](terminal-through-the-years.gif)
+![Terminal art made with Contribution Canvas. The line grows from hello_ to hello wo_ in 2024, then completes as hello world in 2025.](terminal-through-the-years.gif)
 
 ## Make your first design
 
