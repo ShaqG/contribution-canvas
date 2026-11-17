@@ -15,6 +15,15 @@ const glyphs = {
 const DAY = 86_400_000;
 const MAX_YEAR = new Date().getFullYear();
 const PRESETS = [0, 1, 3, 6, 12];
+const EXAMPLE_YEAR = 2024;
+const EXAMPLE_ROWS = [
+  '........................................',
+  '...#...#.#.###.#..#...#.....#...#..#....',
+  '....#..#.#.#...#..#..#.#....#...#.#.#...',
+  '.....#.###.##..#..#..#.#....#.#.#.#.#...',
+  '....#....#.#...#..#..#.#....##.##.#.#...',
+  '...#.....#.###.##.##..#......#.#...#..##',
+];
 const messages = {
   en: {
     title: 'Contribution Canvas',
@@ -23,12 +32,15 @@ const messages = {
     calendarLabel: 'Yearly contribution graph, horizontally scrollable',
     gridLabel: 'Use the arrow keys to select a date and Space to paint.',
     weeks: 'One week per column, starting on Sunday', undo: 'Undo', clear: 'Clear',
+    loadExample: 'Load example', exampleLoaded: 'Loaded the 2024 terminal example. Edit any square to make it yours.',
+    replaceExampleDraft: 'Replace your saved 2024 draft with the example? You can undo this before switching years.',
     brush: 'Brush', swatchesLabel: 'Commits per square', customCount: 'Custom commit count', eraser: 'Eraser',
     pixelText: 'Pixel text', wordsLabel: 'Letters or numbers to draw', wordsPlaceholder: 'e.g. HELLO',
     draw: 'Draw', textHelp: 'Center letters or numbers on the canvas using the current brush.',
     patternFile: 'Pattern file', exportJson: 'Export JSON', import: 'Import',
     exportHelp: 'Use the exported file with the Python script to generate a local Git repository.',
     previewNote: 'The preview shows planned commits.', guide: 'Generation and push guide ↗',
+    starOnGitHub: 'Star on GitHub ↗',
     calendarTitle: '{year} canvas', selection: 'Click or drag across the squares to draw.',
     cell: '{date} · {count} commits',
     cellOne: '{date} · 1 commit',
@@ -48,12 +60,15 @@ const messages = {
     calendarLabel: '年度贡献图，可横向滚动',
     gridLabel: '用方向键选择日期，按空格着色。',
     weeks: '每列一周，从周日开始', undo: '撤销', clear: '清空',
+    loadExample: '加载示例', exampleLoaded: '已加载 2024 年终端图案，可以点按格子继续编辑。',
+    replaceExampleDraft: '用示例替换已保存的 2024 年草稿吗？切换年份前可以撤销。',
     brush: '画笔', swatchesLabel: '每格提交数', customCount: '自定义提交数', eraser: '橡皮擦',
     pixelText: '文字转像素', wordsLabel: '要绘制的英文或数字', wordsPlaceholder: '例如 HELLO',
     draw: '绘制', textHelp: '用当前画笔把英文或数字居中叠加到画布。',
     patternFile: '图案文件', exportJson: '导出 JSON', import: '导入',
     exportHelp: '将导出的文件交给 Python 脚本生成本地 Git 仓库。',
     previewNote: '预览显示计划新增的提交。', guide: '生成与推送说明 ↗',
+    starOnGitHub: '在 GitHub 上点 Star ↗',
     calendarTitle: '{year} 年画布', selection: '点击或拖动色块开始绘制。',
     cell: '{date} · {count} 次提交',
     cellOne: '{date} · 1 次提交',
@@ -104,7 +119,8 @@ function applyLanguage() {
     element.setAttribute('aria-label', translate(element.dataset.i18nLabel));
   }
   $('words').placeholder = translate('wordsPlaceholder');
-  $('guide').href = language === 'zh-CN' ? 'README.zh-CN.md' : 'README.md';
+  const guide = 'https://github.com/ShaqG/contribution-canvas/blob/main/';
+  $('guide').href = guide + (language === 'zh-CN' ? 'README.zh-CN.md#生成本地-git-仓库' : 'README.md#generate-a-local-git-repository');
   $('swatches').firstElementChild.textContent = translate('eraser');
   const weekdays = language === 'zh-CN' ? ['日', '一', '二', '三', '四', '五', '六']
     : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -258,8 +274,12 @@ function setCell(index, count) {
   $('selection').textContent = cells[index].title;
 }
 
+function samePattern(first, second) {
+  return first.size === second.size && [...first].every(([date, count]) => second.get(date) === count);
+}
+
 function record(previous) {
-  if (previous.size === pattern.size && [...previous].every(([date, count]) => pattern.get(date) === count)) return;
+  if (samePattern(previous, pattern)) return;
   undo.push(previous);
   if (undo.length > 40) undo.shift();
   save();
@@ -270,6 +290,14 @@ function finishStroke(event) {
   if (!stroke || (event && event.pointerId !== stroke.pointer)) return;
   record(stroke.previous);
   stroke = null;
+}
+
+function loadPattern(nextYear, nextPattern, previous) {
+  if (year !== nextYear) undo = [];
+  year = nextYear;
+  pattern = nextPattern;
+  record(previous);
+  render();
 }
 
 for (let value = MAX_YEAR; value >= 2008; value--) {
@@ -361,6 +389,20 @@ $('undo').addEventListener('click', () => {
   save();
   render();
 });
+$('example').addEventListener('click', () => {
+  finishStroke();
+  const days = datesForYear(EXAMPLE_YEAR);
+  const example = new Map();
+  for (const [row, pixels] of EXAMPLE_ROWS.entries()) {
+    for (const [column, pixel] of Array.from(pixels).entries()) {
+      if (pixel === '#') example.set(days[column * 7 + row], 1);
+    }
+  }
+  const previous = readDraft(EXAMPLE_YEAR) ?? new Map();
+  if (previous.size && !samePattern(previous, example) && !window.confirm(translate('replaceExampleDraft'))) return;
+  loadPattern(EXAMPLE_YEAR, example, previous);
+  $('status').textContent = translate('exampleLoaded');
+});
 $('clear').addEventListener('click', () => {
   const previous = new Map(pattern);
   pattern.clear();
@@ -410,11 +452,7 @@ $('file').addEventListener('change', async event => {
     finishStroke();
     save();
     const previous = readDraft(data.year) ?? new Map();
-    if (year !== data.year) undo = [];
-    year = data.year;
-    pattern = next;
-    record(previous);
-    render();
+    loadPattern(data.year, next, previous);
     $('status').textContent = translate('imported', { file: file.name });
   } catch (error) {
     const detail = error instanceof SyntaxError ? translate('invalidJson') : error.message;

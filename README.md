@@ -2,17 +2,21 @@
 
 English · [简体中文](README.zh-CN.md)
 
-Design GitHub contribution graph art in your browser and export a pattern for a standalone Git repository. Download the project and open [index.html](index.html) to use it offline. The editor starts with a blank canvas for the current year, supports years from 2008 onward, and offers English and Simplified Chinese.
+Draw pixel art on your GitHub contribution graph. Try the editor without signing in or giving it a GitHub token. Export your design when you're ready to generate the commits locally.
 
-1. Pick a brush to set the number of commits per square. Click or drag to paint. On a keyboard, use the arrow keys to select a day and Space to paint.
-2. Enter up to eight English letters, digits, or spaces to stamp pixel text. Use the eraser for individual squares or undo the last edit.
-3. Export the pattern as JSON. The filename includes the selected year, and you can import it later to continue editing.
+**[Try it online →](https://shaqg.github.io/contribution-canvas/)** · [View the finished 2025 graph](https://github.com/ShaqG?tab=overview&from=2025-12-01&to=2025-12-31)
 
-Each square represents the commits you plan to add. GitHub combines these with existing activity, so the colors on your profile may differ from the preview.
+![Terminal art made with Contribution Canvas. The cursor moves from hello w to hello wo in 2024, then the line completes as hello world in 2025.](terminal-through-the-years.gif)
 
-Download the [HELLO WORLD example](hello-world-2025.json) and import it to try the editor.
+## Make your first design
 
-![HELLO WORLD example on a 2025 contribution grid](hello-world-2025.png)
+1. Click **Load example** to edit the 2024 terminal art, or pick any year from 2008 onward and start with a blank canvas.
+2. Paint with the mouse, touch, or keyboard. You can also stamp up to eight English letters, digits, or spaces in one go.
+3. **Export JSON** to save or share your design. Import the file to keep editing, or use the generator below to turn it into Git commits.
+
+The editor supports English and Simplified Chinese. For offline use, [download the ZIP](https://github.com/ShaqG/contribution-canvas/archive/refs/heads/main.zip), extract it, and open `index.html`. You can also import the [original HELLO WORLD example](hello-world-2025.json).
+
+Each square represents planned commits. GitHub adds them to existing activity, so the colors on your profile may differ from the preview.
 
 ## Generate a local Git repository
 

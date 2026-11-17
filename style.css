@@ -65,6 +65,7 @@ button:disabled { opacity: .48; cursor: default; }
 button.primary { background: var(--accent); font-weight: 750; }
 .status { margin-top: 12px; min-height: 20px; color: var(--accent); }
 footer { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.footer-links { gap: 6px 18px; }
 a { color: var(--accent); }
 @media (max-width: 720px) {
   main { width: calc(100% - 28px); padding-top: 24px; }

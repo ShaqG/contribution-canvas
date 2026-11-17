@@ -2,17 +2,21 @@
 
 [English](README.md) · 简体中文
 
-用浏览器打开 [index.html](index.html) 即可离线编辑。首次打开是当年的空白画布，可以选择 2008 年至当年之间的任意年份。右上角可以切换简体中文和 English。
+在 GitHub 贡献图上画像素画。打开编辑器就能试用，无需登录或提供 GitHub Token。画好后可以导出图案，在本地生成对应的 Git 提交。
 
-1. 点击色块设置画笔。鼠标可以拖着画，触屏可以点按。用键盘时，按方向键选日期，按空格着色。
-2. 输入最多 8 个英文字母、数字或空格，将像素文字叠加到画布。选橡皮擦可以擦掉单格，撤销可恢复上一笔。
-3. 点击 **导出 JSON**，把文件保存到此目录。文件名包含所选年份，也可以随时导入图案继续编辑。
+**[在线试玩 →](https://shaqg.github.io/contribution-canvas/)** · [查看 2025 年贡献图成品](https://github.com/ShaqG?tab=overview&from=2025-12-01&to=2025-12-31)
 
-每格的数字是计划新增的提交数。实际主页会将这些提交与已有活动合并，颜色深浅可能和预览不同。
+![跨年终端动图。2024 年的 hello w 补成 hello wo，光标向右移动，2025 年打完 hello world。](terminal-through-the-years.gif)
 
-下图是 2025 年的示例。下载 [HELLO WORLD 图案](hello-world-2025.json)，在编辑器中导入就能查看和修改。
+## 开始画第一张图
 
-![HELLO WORLD 贡献图预览](hello-world-2025.png)
+1. 点 **加载示例**，直接编辑 2024 年的终端图案。也可以选一个年份，从空白画布开始画。
+2. 用鼠标、触屏或键盘给格子着色，也可以一次绘制最多 8 个英文字母、数字或空格。
+3. 点 **导出 JSON** 保存或分享图案。之后可以导入继续编辑，或用下面的生成器创建 Git 提交。
+
+右上角可以切换简体中文和 English。离线使用时，[下载 ZIP](https://github.com/ShaqG/contribution-canvas/archive/refs/heads/main.zip) 并解压，再打开 `index.html`。原来的 [HELLO WORLD 图案](hello-world-2025.json) 也可以继续导入。
+
+每格代表计划新增的提交数。GitHub 会将这些提交与已有活动合并，颜色深浅可能和预览不同。
 
 ## 生成本地 Git 仓库
 

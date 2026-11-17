@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Design GitHub contribution art offline and export dates and commit counts.">
+  <meta name="description" content="Draw pixel art on a GitHub contribution graph. Try the editor without signing in, then export your design to generate a Git repository locally.">
   <title>Contribution Canvas</title>
   <link rel="stylesheet" href="style.css">
   <script src="canvas.js" defer></script>
@@ -37,7 +37,11 @@
       </div>
       <div class="canvas-foot">
         <span data-i18n="weeks">One week per column, starting on Sunday</span>
-        <div class="actions"><button id="undo" type="button" data-i18n="undo" disabled>Undo</button><button id="clear" type="button" data-i18n="clear">Clear</button></div>
+        <div class="actions">
+          <button id="example" type="button" data-i18n="loadExample">Load example</button>
+          <button id="undo" type="button" data-i18n="undo" disabled>Undo</button>
+          <button id="clear" type="button" data-i18n="clear">Clear</button>
+        </div>
       </div>
     </section>
 
@@ -66,7 +70,13 @@
       </section>
     </div>
     <p id="status" class="status" role="status"></p>
-    <footer><span data-i18n="previewNote">The preview shows planned commits.</span><a id="guide" href="README.md" data-i18n="guide">Generation and push guide ↗</a></footer>
+    <footer>
+      <span data-i18n="previewNote">The preview shows planned commits.</span>
+      <div class="actions footer-links">
+        <a id="guide" href="https://github.com/ShaqG/contribution-canvas/blob/main/README.md#generate-a-local-git-repository" data-i18n="guide">Generation and push guide ↗</a>
+        <a href="https://github.com/ShaqG/contribution-canvas" data-i18n="starOnGitHub">Star on GitHub ↗</a>
+      </div>
+    </footer>
   </main>
 </body>
 </html>
